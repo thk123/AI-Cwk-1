@@ -199,6 +199,79 @@ public class TicTacToe {
 		}
 	}
 
+	int getUtilityWithMinimax(GameState state, boolean isMax, int parentBestValue)
+	{
+		++levelNodesExpanded; //we are expanding this 
+		if(isMax) //we are trying to maximise utility - ie min just had a go or is first go
+		{
+			if(state.board.lineExists()) //then a line exists by min 
+			{
+				return -1; //This is a bad out come since other player has won
+			}
+			else if(state.board.boardFull())
+			{
+				return 0; //is a draw
+			}
+			else
+			{
+				//Play a go;
+				int maxValue = Integer.MIN_VALUE;
+				for(GameState sucessorState : getSuccessorStates(state)) //for each of the successor states try to maximise the result
+				{
+					int value = getUtilityWithMinimax(sucessorState, false, maxValue); //find utility of this child, trying to minimise
+					if(value > maxValue) //have we found a better successor state then previous
+					{
+						maxValue = value;
+					}
+					/*Since we are maximising, the parent is minimising, if the parent has a max value that is
+					 * already smaller that our max value, parent never going to use this so can return our
+					 * value (though it won't be used) and not bother exploring any more values 
+					 */
+					
+					if(parentBestValue <= maxValue)
+					{
+						return maxValue;
+					}
+				}
+				return maxValue;
+			}
+		}
+		else //we are trying to minimise the value (playing the other side)
+		{
+			if(state.board.lineExists()) //then a line exists by min 
+			{
+				return 1; //This is good has we made a winning move last go 
+			}
+			else if(state.board.boardFull())
+			{
+				return 0; //is a draw
+			}
+			else
+			{
+				//Play a go;
+				int minValue = Integer.MAX_VALUE;
+				for(GameState sucessorState : getSuccessorStates(state)) //for each of the successor states try to minimise the result
+				{
+					int value = getUtilityWithMinimax(sucessorState, true, minValue); //get the utility of this child, this time trying to maximise
+					if(value < minValue) //have we found a better successor state then previous
+					{
+						minValue = value;
+					}
+					
+					/*Since we are minimising, the parent is maximising, if the parent has a min value that is
+					 * already larger that our min value, parent never going to use this so can return our
+					 * value (though it won't be used) and not bother exploring any more values 
+					 */
+					if(parentBestValue >= minValue)
+					{
+						return minValue;
+					}
+				}
+				return minValue;
+			}
+		}		
+	}
+	
 	/*
 	 * Make the next move, determined using minimax with alpha-beta
 	 * pruning.
@@ -216,7 +289,22 @@ public class TicTacToe {
 		// elsewhere, and you may not introduce additional classes.
 
 		// You must comment your code to explain what you have done.
-
+		++levelNodesExpanded; //we are expanding the root node
+		
+		int maxValue = Integer.MIN_VALUE; //we are looking to maximise so finding the biggest value
+		GameState nextState = null;
+		for(GameState sucessorState : getSuccessorStates(gameState)) //for each of the sucessor states try to maximise the result
+		{
+			int value = getUtilityWithMinimax(sucessorState, false, maxValue); //get the utility of the child (trying to minimise since is the other player)
+			
+			if(value > maxValue) //have we found a better sucessor state then previous
+			{
+				maxValue = value;
+				nextState = sucessorState;
+			}
+		}
+		
+		gameState = makeMove(gameState, nextState.moveMade);
 		// Print how many nodes were expanded to find this move
 		System.out.println("Nodes considered: " + levelNodesExpanded);
 		// Print the move itself - YOU SHOULD FILL THIS IN TOO
@@ -256,7 +344,7 @@ public class TicTacToe {
 		 ********************************************************/
 
 		// Use standard minimax on an empty board
-		System.out.println("--- Standard minimax ---");
+		/*System.out.println("--- Standard minimax ---");
 		TicTacToe board1 = new TicTacToe();
 		System.out.println("board:\n" + board1.gameState.board + "\n");
 		
@@ -272,10 +360,10 @@ public class TicTacToe {
 		System.out.println("Total nodes expanded: " 
 				+ board1.totalNodesExpanded);
 
-		System.out.println("\n\n\n");
+		System.out.println("\n\n\n");*/
 
 		// Use minimax with alpha-beta pruning on an empty board
-		/*System.out.println("--- alpha-beta minimax ---");
+		System.out.println("--- alpha-beta minimax ---");
 		TicTacToe board2 = new TicTacToe();
 		System.out.println("board:\n" + board2.gameState.board);
 		while (!(board2.gameState.board.lineExists() ||
@@ -286,7 +374,7 @@ public class TicTacToe {
 			System.out.println("board:\n" + board2.gameState.board +"\n");
 		}
 		System.out.println("Total nodes expanded: " 
-				+ board2.totalNodesExpanded);*/
+				+ board2.totalNodesExpanded);
 	}
 }
 
