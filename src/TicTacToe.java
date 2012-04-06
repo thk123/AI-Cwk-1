@@ -109,8 +109,21 @@ public class TicTacToe {
 		// elsewhere, and you may not introduce additional classes.
 
 		// You must comment your code to explain what you have done.
+		++levelNodesExpanded; //we are expanding this node
 		
-		GameState nextState = getNextMove(gameState); //Chose an optimal move for this state 
+		//Play a go;
+		int maxValue = Integer.MIN_VALUE; //we are looking to maximise so finding the biggest value
+		GameState nextState = null;
+		for(GameState sucessorState : getSuccessorStates(gameState)) //for each of the successor states try to maximise the result
+		{
+			int value = getUtility(sucessorState, false); //get the utility of the child (trying to minimise since is the other player)
+			
+			if(value > maxValue) //have we found a better successor state then previous
+			{
+				maxValue = value;
+				nextState = sucessorState;
+			}
+		} 
 
 		// Print how many nodes were expanded to find this move
 		System.out.println("Nodes considered: " + levelNodesExpanded);
@@ -123,27 +136,8 @@ public class TicTacToe {
 		gameState = makeMove(gameState, nextState.moveMade);
 	}
 	
-	//make an optimal move for the current player from the given state
-	GameState getNextMove(GameState state)
-	{		
-		++levelNodesExpanded; //we are expanding this node
-		//Play a go;
-		int maxValue = Integer.MIN_VALUE; //we are looking to maximise so finding the biggest value
-		GameState nextState = null;
-		for(GameState sucessorState : getSuccessorStates(state)) //for each of the sucessor states try to maximise the result
-		{
-			int value = getUtility(sucessorState, false); //get the utility of the child (trying to minimise since is the other player)
-			
-			if(value > maxValue) //have we found a better sucessor state then previous
-			{
-				maxValue = value;
-				nextState = sucessorState;
-			}
-		}
-		return nextState; //this is the best move
-	}
-	
 	//find the utility of a given state, where isMax determines if currently trying to maximise or minimise
+	//This does not use alpha beta pruning
 	int getUtility(GameState state, boolean isMax)
 	{
 		++levelNodesExpanded; //we are expanding this 
@@ -161,10 +155,10 @@ public class TicTacToe {
 			{
 				//Play a go;
 				int maxValue = Integer.MIN_VALUE;
-				for(GameState sucessorState : getSuccessorStates(state)) //for each of the sucessor states try to maximise the result
+				for(GameState sucessorState : getSuccessorStates(state)) //for each of the successor states try to maximise the result
 				{
 					int value = getUtility(sucessorState, false); //find utility of this child, trying to minimise
-					if(value > maxValue) //have we found a better sucessor state then previous
+					if(value > maxValue) //have we found a better successor state then previous
 					{
 						maxValue = value;
 					}
@@ -172,7 +166,7 @@ public class TicTacToe {
 				return maxValue;
 			}
 		}
-		else //we are trying to minimse the value (playing the other side)
+		else //we are trying to minimise the value (playing the other side)
 		{
 			if(state.board.lineExists()) //then a line exists by min 
 			{
@@ -218,11 +212,17 @@ public class TicTacToe {
 				int maxValue = Integer.MIN_VALUE;
 				for(GameState sucessorState : getSuccessorStates(state)) //for each of the successor states try to maximise the result
 				{
+					/*Since the max value is the very least we are going to return (since we are maximising)
+					 * if the child (which is minimising) realises it is going to be at least as small
+					 * (if not smaller) then it can stop searching as this node will ignore it
+					 */
 					int value = getUtilityWithMinimax(sucessorState, false, maxValue); //find utility of this child, trying to minimise
+					
 					if(value > maxValue) //have we found a better successor state then previous
 					{
 						maxValue = value;
 					}
+					
 					/*Since we are maximising, the parent is minimising, if the parent has a max value that is
 					 * already smaller that our max value, parent never going to use this so can return our
 					 * value (though it won't be used) and not bother exploring any more values 
@@ -252,6 +252,10 @@ public class TicTacToe {
 				int minValue = Integer.MAX_VALUE;
 				for(GameState sucessorState : getSuccessorStates(state)) //for each of the successor states try to minimise the result
 				{
+					/*Since the min value is the very most we are going to return (since we are minimising)
+					 * if the child (which is maximising) realises it is going to be at least as big
+					 * (if not bigger) then it can stop searching as this node will ignore it
+					 */
 					int value = getUtilityWithMinimax(sucessorState, true, minValue); //get the utility of this child, this time trying to maximise
 					if(value < minValue) //have we found a better successor state then previous
 					{
