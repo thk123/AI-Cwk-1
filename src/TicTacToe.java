@@ -193,7 +193,7 @@ public class TicTacToe {
 		}
 	}
 
-	int getUtilityWithMinimax(GameState state, boolean isMax, int parentBestValue)
+	int getUtilityWithAlphaBeta(GameState state, boolean isMax, int parentBestValue)
 	{
 		++levelNodesExpanded; //we are expanding this 
 		if(isMax) //we are trying to maximise utility - ie min just had a go or is first go
@@ -216,7 +216,7 @@ public class TicTacToe {
 					 * if the child (which is minimising) realises it is going to be at least as small
 					 * (if not smaller) then it can stop searching as this node will ignore it
 					 */
-					int value = getUtilityWithMinimax(sucessorState, false, maxValue); //find utility of this child, trying to minimise
+					int value = getUtilityWithAlphaBeta(sucessorState, false, maxValue); //find utility of this child, trying to minimise
 					
 					if(value > maxValue) //have we found a better successor state then previous
 					{
@@ -256,7 +256,7 @@ public class TicTacToe {
 					 * if the child (which is maximising) realises it is going to be at least as big
 					 * (if not bigger) then it can stop searching as this node will ignore it
 					 */
-					int value = getUtilityWithMinimax(sucessorState, true, minValue); //get the utility of this child, this time trying to maximise
+					int value = getUtilityWithAlphaBeta(sucessorState, true, minValue); //get the utility of this child, this time trying to maximise
 					if(value < minValue) //have we found a better successor state then previous
 					{
 						minValue = value;
@@ -299,7 +299,7 @@ public class TicTacToe {
 		GameState nextState = null;
 		for(GameState sucessorState : getSuccessorStates(gameState)) //for each of the sucessor states try to maximise the result
 		{
-			int value = getUtilityWithMinimax(sucessorState, false, maxValue); //get the utility of the child (trying to minimise since is the other player)
+			int value = getUtilityWithAlphaBeta(sucessorState, false, maxValue); //get the utility of the child (trying to minimise since is the other player)
 			
 			if(value > maxValue) //have we found a better sucessor state then previous
 			{
